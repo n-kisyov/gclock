@@ -168,5 +168,5 @@ func GetSettingsPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(filepath.Dir(exe), "alarmclock_settings.json"), nil
+	return filepath.Join(filepath.Dir(exe), "gclock_settings.json"), nil
 }

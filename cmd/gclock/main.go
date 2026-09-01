@@ -88,7 +88,7 @@ func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
 	case win.WM_TIMER:
 		if wParam == ui.TIMER_CLOCK {
 			win.InvalidateRect(hwnd, nil, false)
-			ui.TrayUpdateTooltip(&gState.Nid, "AlarmClock (Go Port)")
+			ui.TrayUpdateTooltip(&gState.Nid, "GClock (Go Port)")
 		} else if wParam == 1001 { // TimerSoundPreview
 			audioManager.StopAlarm()
 		}
@@ -169,8 +169,8 @@ func main() {
 	lf.LfHeight = -20
 	gState.Fonts.HDateFont = win.CreateFontIndirect(&lf)
 
-	className, _ := syscall.UTF16PtrFromString("AlarmClockMainWnd")
-	appName, _ := syscall.UTF16PtrFromString("AlarmClock")
+	className, _ := syscall.UTF16PtrFromString("GClockMainWnd")
+	appName, _ := syscall.UTF16PtrFromString("GClock")
 
 	var wc win.WNDCLASSEX
 	wc.CbSize = uint32(unsafe.Sizeof(wc))

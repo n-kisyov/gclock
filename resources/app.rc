@@ -3,7 +3,7 @@
 
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "app.manifest"
 
-IDI_APPICON      ICON   "alarmclock.ico"
+IDI_APPICON      ICON   "gclock.ico"
 IDR_DIGITALFONT RCDATA "digital-7.ttf"
 
 IDD_SETTINGS DIALOGEX 0, 0, 260, 407

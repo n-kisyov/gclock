@@ -57,7 +57,7 @@ func TrayCreate(hwnd win.HWND, nid *win.NOTIFYICONDATA) bool {
 	nid.UCallbackMessage = WM_TRAYICON
 	nid.HIcon = win.LoadIcon(win.GetModuleHandle(nil), win.MAKEINTRESOURCE(IDI_APPICON))
 	
-	tip, _ := syscall.UTF16FromString("AlarmClock")
+	tip, _ := syscall.UTF16FromString("GClock")
 	copy(nid.SzTip[:], tip)
 	
 	return shellNotifyIcon(NIM_ADD, nid)

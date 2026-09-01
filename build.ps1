@@ -9,7 +9,7 @@ $ErrorActionPreference = "Stop"
 $ProjRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ResDir   = Join-Path $ProjRoot "resources"
 $OutExe   = Join-Path $ProjRoot "gclock.exe"
-$CmdDir   = Join-Path $ProjRoot "cmd\alarmclock"
+$CmdDir   = Join-Path $ProjRoot "cmd\gclock"
 
 $MSysRoot = "C:\msys64\ucrt64"
 $WrPath   = Join-Path $MSysRoot "bin\windres.exe"
@@ -30,7 +30,7 @@ if (-not (Test-Path $WrPath)) {
     exit 1
 }
 
-$IconFile = Join-Path $ResDir "alarmclock.ico"
+$IconFile = Join-Path $ResDir "gclock.ico"
 if (-not (Test-Path $IconFile)) {
     Write-Host "Generating app icon..." -ForegroundColor Cyan
     $GenScript = Join-Path $ProjRoot "generate_icon.ps1"
@@ -50,7 +50,7 @@ if ($LASTEXITCODE -ne 0) { Write-Error "windres failed"; exit 1 }
 
 Write-Host "Building Go application..." -ForegroundColor Cyan
 Push-Location $ProjRoot
-go build -ldflags="-H windowsgui -s -w" -o $OutExe ./cmd/alarmclock
+go build -ldflags="-H windowsgui -s -w" -o $OutExe ./cmd/gclock
 if ($LASTEXITCODE -ne 0) { Write-Error "go build failed"; exit 1 }
 Pop-Location
 
