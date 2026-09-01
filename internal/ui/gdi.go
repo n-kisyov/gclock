@@ -9,6 +9,8 @@ import (
 
 var (
 	procCreatePen  = modgdi32.NewProc("CreatePen")
+	procRoundRect  = modgdi32.NewProc("RoundRect")
+	procRectangle  = modgdi32.NewProc("Rectangle")
 	procExtTextOut = modgdi32.NewProc("ExtTextOutW")
 	procDrawText   = windows.NewLazySystemDLL("user32.dll").NewProc("DrawTextW")
 )
@@ -45,4 +47,28 @@ func DrawText(hdc win.HDC, str *uint16, count int32, rect *win.RECT, format uint
 		uintptr(format),
 	)
 	return int32(ret)
+}
+
+func RoundRect(hdc win.HDC, left, top, right, bottom, width, height int32) bool {
+	ret, _, _ := procRoundRect.Call(
+		uintptr(hdc),
+		uintptr(left),
+		uintptr(top),
+		uintptr(right),
+		uintptr(bottom),
+		uintptr(width),
+		uintptr(height),
+	)
+	return ret != 0
+}
+
+func Rectangle(hdc win.HDC, left, top, right, bottom int32) bool {
+	ret, _, _ := procRectangle.Call(
+		uintptr(hdc),
+		uintptr(left),
+		uintptr(top),
+		uintptr(right),
+		uintptr(bottom),
+	)
+	return ret != 0
 }

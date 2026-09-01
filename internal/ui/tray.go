@@ -27,14 +27,13 @@ const (
 	NIF_ICON    = 0x00000002
 	NIF_TIP     = 0x00000004
 	
-	IDI_APPICON = 101 // From resource.h
-	
 	WM_TRAYICON = win.WM_APP + 1
 	
-	IDM_TRAY_SHOW = 40001
-	IDM_SETTINGS  = 40002
-	IDM_ABOUT     = 40003
-	IDM_TRAY_EXIT = 40004
+	IDM_SETTINGS  = 1001
+	IDM_EXIT      = 1002
+	IDM_ABOUT     = 1003
+	IDM_TRAY_SHOW = 2001
+	IDM_TRAY_EXIT = 2002
 )
 
 func shellNotifyIcon(dwMessage uint32, pnid *win.NOTIFYICONDATA) bool {
