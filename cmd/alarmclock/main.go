@@ -9,9 +9,9 @@ import (
 	"github.com/lxn/win"
 	"golang.org/x/sys/windows"
 
-	"github.com/user/gclock/internal/audio"
-	"github.com/user/gclock/internal/settings"
-	"github.com/user/gclock/internal/ui"
+	"github.com/n-kisyov/glock/internal/audio"
+	"github.com/n-kisyov/glock/internal/settings"
+	"github.com/n-kisyov/glock/internal/ui"
 )
 
 var gState *ui.AppState

@@ -8,7 +8,7 @@ $ErrorActionPreference = "Stop"
 
 $ProjRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ResDir   = Join-Path $ProjRoot "resources"
-$OutExe   = Join-Path $ProjRoot "alarmclock.exe"
+$OutExe   = Join-Path $ProjRoot "gclock.exe"
 $CmdDir   = Join-Path $ProjRoot "cmd\alarmclock"
 
 $MSysRoot = "C:\msys64\ucrt64"

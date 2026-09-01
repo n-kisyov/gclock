@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/lxn/win"
-	"github.com/user/gclock/internal/settings"
+	"github.com/n-kisyov/glock/internal/settings"
 )
 
 const (

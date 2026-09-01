@@ -1,4 +1,4 @@
-module github.com/user/gclock
+module github.com/n-kisyov/glock
 
 go 1.26.5
 

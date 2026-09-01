@@ -9,7 +9,7 @@ import (
 
 	"github.com/lxn/win"
 	"golang.org/x/sys/windows"
-	"github.com/user/gclock/internal/settings"
+	"github.com/n-kisyov/glock/internal/settings"
 )
 
 type ClockFonts struct {

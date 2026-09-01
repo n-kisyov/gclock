@@ -2,7 +2,7 @@ package alarms
 
 import (
 	"time"
-	"github.com/user/gclock/internal/settings"
+	"github.com/n-kisyov/glock/internal/settings"
 )
 
 // MinuteStamp returns whole minutes since the Windows FILETIME epoch (1601-01-01).
