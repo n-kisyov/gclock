@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"runtime"
 	"syscall"
 	"time"
 	"unsafe"
@@ -144,6 +145,8 @@ func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
 }
 
 func main() {
+	runtime.LockOSThread()
+	
 	var icc win.INITCOMMONCONTROLSEX
 	icc.DwSize = uint32(unsafe.Sizeof(icc))
 	icc.DwICC = win.ICC_STANDARD_CLASSES
