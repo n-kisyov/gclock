@@ -13,6 +13,7 @@ var (
 	procRectangle  = modgdi32.NewProc("Rectangle")
 	procExtTextOut = modgdi32.NewProc("ExtTextOutW")
 	procDrawText   = windows.NewLazySystemDLL("user32.dll").NewProc("DrawTextW")
+	procGetDateFormatEx = windows.NewLazySystemDLL("kernel32.dll").NewProc("GetDateFormatEx")
 )
 
 const (
@@ -71,4 +72,16 @@ func Rectangle(hdc win.HDC, left, top, right, bottom int32) bool {
 		uintptr(bottom),
 	)
 	return ret != 0
+}
+
+func GetDateFormatEx(localeName *uint16, dwFlags uint32, lpDate *windows.Systemtime, lpFormat *uint16, lpDateStr *uint16, cchDate int32) int32 {
+	ret, _, _ := procGetDateFormatEx.Call(
+		uintptr(unsafe.Pointer(localeName)),
+		uintptr(dwFlags),
+		uintptr(unsafe.Pointer(lpDate)),
+		uintptr(unsafe.Pointer(lpFormat)),
+		uintptr(unsafe.Pointer(lpDateStr)),
+		uintptr(cchDate),
+	)
+	return int32(ret)
 }

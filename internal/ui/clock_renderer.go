@@ -114,16 +114,7 @@ func ClockDrawDigital(hdc win.HDC, rc *win.RECT, st *windows.Systemtime, s *sett
 	
 	// Try to get long date format
 	var dateBuf [128]uint16
-	ret, _, _ := syscall.Syscall6(
-		windows.NewLazySystemDLL("kernel32.dll").NewProc("GetDateFormatEx").Addr(),
-		6,
-		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr("!LOCALE_NAME_USER_DEFAULT"))), // actually just passing 0 for locale name uses LOCALE_NAME_USER_DEFAULT
-		uintptr(0x00000002), // DATE_LONGDATE
-		uintptr(unsafe.Pointer(st)),
-		0,
-		uintptr(unsafe.Pointer(&dateBuf[0])),
-		uintptr(len(dateBuf)),
-	)
+	ret := GetDateFormatEx(nil, 0x00000002, st, nil, &dateBuf[0], int32(len(dateBuf)))
 	if ret != 0 {
 		dateStr = syscall.UTF16ToString(dateBuf[:])
 	}
