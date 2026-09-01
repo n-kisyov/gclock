@@ -82,7 +82,7 @@ func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
 			}
 			win.SetForegroundWindow(hwnd)
 		} else if id == ui.IDM_TRAY_EXIT || id == ui.IDM_EXIT {
-			win.PostMessage(hwnd, win.WM_CLOSE, 0, 0)
+			win.DestroyWindow(hwnd)
 		}
 		return 0
 
