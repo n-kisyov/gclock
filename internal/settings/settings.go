@@ -33,6 +33,7 @@ type Settings struct {
 	DarkMode        bool   `json:"dark_mode"`
 	ClockStyle      int    `json:"clock_style"`
 	AlarmsEnabled   bool   `json:"alarms_enabled"`
+	AlarmCount      int    `json:"alarm_count"`
 	SoundMode       int    `json:"sound_mode"`
 	Hour24          bool   `json:"hour24"`
 	Crescendo       bool   `json:"crescendo"`
@@ -62,6 +63,7 @@ func Default() *Settings {
 		DarkMode:       true,
 		ClockStyle:     ClockDigital,
 		AlarmsEnabled:  true,
+		AlarmCount:     MaxAlarms,
 		SoundMode:      SoundMP3,
 		Hour24:         true,
 		Crescendo:      true,

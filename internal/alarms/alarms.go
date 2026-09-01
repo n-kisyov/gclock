@@ -1,13 +1,24 @@
 package alarms
 
 import (
+	"unsafe"
+
 	"github.com/n-kisyov/gclock/internal/settings"
 	"golang.org/x/sys/windows"
 )
 
+var (
+	modkernel32 = windows.NewLazySystemDLL("kernel32.dll")
+	procSystemTimeToFileTime = modkernel32.NewProc("SystemTimeToFileTime")
+	procFileTimeToSystemTime = modkernel32.NewProc("FileTimeToSystemTime")
+)
+
 func MinuteStamp(st *windows.Systemtime) uint64 {
 	var ft windows.Filetime
-	windows.SystemTimeToFileTime(st, &ft)
+	procSystemTimeToFileTime.Call(
+		uintptr(unsafe.Pointer(st)),
+		uintptr(unsafe.Pointer(&ft)),
+	)
 	// uint64 combining low and high
 	u := (uint64(ft.HighDateTime) << 32) | uint64(ft.LowDateTime)
 	return u / 600000000 // 100ns ticks in one minute
@@ -18,8 +29,11 @@ func StampToSystemtime(stamp uint64, st *windows.Systemtime) bool {
 	var ft windows.Filetime
 	ft.HighDateTime = uint32(u >> 32)
 	ft.LowDateTime = uint32(u & 0xFFFFFFFF)
-	err := windows.FileTimeToSystemTime(&ft, st)
-	return err == nil
+	ret, _, _ := procFileTimeToSystemTime.Call(
+		uintptr(unsafe.Pointer(&ft)),
+		uintptr(unsafe.Pointer(st)),
+	)
+	return ret != 0
 }
 
 func NextDeltaMinutes(st *windows.Systemtime, a *settings.Alarm) (int, bool) {
