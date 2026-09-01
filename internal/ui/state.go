@@ -1,19 +1,29 @@
 package ui
 
 import (
-	"path/filepath"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/lxn/win"
 	"github.com/n-kisyov/glock/internal/settings"
 )
 
 type AppState struct {
-	Settings *settings.Settings
+	HoverTarget     HitTarget
+	PressedTarget   HitTarget
+	PressedIn       bool
+	Tracking        bool
+	AlarmsCollapsed bool
+	SnoozeEnd       time.Time
+	SleepRunning    bool
+	SleepEnd        time.Time
+	Settings        *settings.Settings
 
-	AppMode         int
-	WinX, WinY      int32
-	WinW, WinH      int32
+	AppMode string
+
+	WinX, WinY int32
+	WinW, WinH int32
 
 	AlarmActive     bool
 	RingingAlarm    int
@@ -22,18 +32,17 @@ type AppState struct {
 	AlarmStartedMs  uint64
 	AutoSnoozeCount int
 
-	SnoozePending   bool
-	SnoozeEndMs     uint64
-	SnoozeTotalSec  int
+	SnoozePending  bool
+	SnoozeEndMs    uint64
+	SnoozeTotalSec int
 
-	CdRemainingMs   int
+	CdRemainingMs   int64
 	CdRunning       bool
 	CdLastTick      uint64
 
 	SwRunning       bool
 	SwStartTick     uint32
 	SwAccumulatedMs uint32
-
 	HMainWnd        win.HWND
 	Fonts           ClockFonts
 	ClockAreaH      int32

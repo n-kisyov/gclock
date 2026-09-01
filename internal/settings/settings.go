@@ -170,3 +170,12 @@ func GetSettingsPath() (string, error) {
 	}
 	return filepath.Join(filepath.Dir(exe), "gclock_settings.json"), nil
 }
+
+func (s *Settings) Save(exeDir string) error {
+	path, err := GetSettingsPath()
+	if err != nil {
+		return err
+	}
+	return Save(path, s)
+}
+

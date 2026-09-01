@@ -15,6 +15,7 @@ import (
 type ClockFonts struct {
 	HClockFont win.HFONT
 	HDateFont  win.HFONT
+	HGuiFont   win.HFONT
 }
 
 var (

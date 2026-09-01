@@ -28,11 +28,11 @@ func checkDlgButton(hDlg win.HWND, id int32, check bool) {
 	if check {
 		state = win.BST_CHECKED
 	}
-	win.CheckDlgButton(hDlg, id, uint32(state))
+	CheckDlgButton(hDlg, id, uint32(state))
 }
 
 func isDlgButtonChecked(hDlg win.HWND, id int32) bool {
-	return win.IsDlgButtonChecked(hDlg, id) == win.BST_CHECKED
+	return IsDlgButtonChecked(hDlg, id) == win.BST_CHECKED
 }
 
 func SettingsDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) uintptr {
@@ -49,7 +49,7 @@ func SettingsDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) 
 		checkDlgButton(hDlg, IDC_ALARMS_ENABLED, s.Settings.AlarmsEnabled)
 		checkDlgButton(hDlg, IDC_HOUR24, s.Settings.Hour24)
 		checkDlgButton(hDlg, IDC_CRESCENDO, s.Settings.Crescendo)
-		checkDlgButton(hDlg, IDC_AUTOSTART, s.Settings.Autostart)
+		checkDlgButton(hDlg, IDC_AUTOSTART, s.Settings.AutoStart)
 		checkDlgButton(hDlg, IDC_START_MINIMIZED, s.Settings.StartMinimized)
 		checkDlgButton(hDlg, IDC_ACRYLIC, s.Settings.Acrylic)
 		checkDlgButton(hDlg, IDC_ALWAYS_ON_TOP, s.Settings.AlwaysOnTop)
@@ -95,7 +95,7 @@ func SettingsDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) 
 		}
 		win.SendMessage(hCombo, win.CB_SETCURSEL, uintptr(sel), 0)
 
-		win.SetDlgItemText(hDlg, IDC_WAKE_NOTE, "")
+		SetDlgItemText(hDlg, IDC_WAKE_NOTE, "")
 
 		hCombo = win.GetDlgItem(hDlg, IDC_SLEEP_MINUTES)
 		sel = 1 // 30 minutes default
@@ -132,7 +132,7 @@ func SettingsDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) 
 
 	case win.WM_MEASUREITEM:
 		mis := (*win.MEASUREITEMSTRUCT)(unsafe.Pointer(lParam))
-		if mis.CtlType == win.ODT_COMBOBOX {
+		if mis.CtlType == ODT_COMBOBOX {
 			mis.ItemHeight = 20
 			return 1
 		}
@@ -155,7 +155,7 @@ func SettingsDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) 
 
 			s.Settings.Hour24 = isDlgButtonChecked(hDlg, IDC_HOUR24)
 			s.Settings.Crescendo = isDlgButtonChecked(hDlg, IDC_CRESCENDO)
-			s.Settings.Autostart = isDlgButtonChecked(hDlg, IDC_AUTOSTART)
+			s.Settings.AutoStart = isDlgButtonChecked(hDlg, IDC_AUTOSTART)
 			s.Settings.StartMinimized = isDlgButtonChecked(hDlg, IDC_START_MINIMIZED)
 
 			acrylicChanged := isDlgButtonChecked(hDlg, IDC_ACRYLIC) != s.Settings.Acrylic
@@ -232,7 +232,7 @@ func SettingsDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) 
 				win.SetWindowPos(s.HMainWnd, 0, 0, 0, w, h, win.SWP_NOMOVE|win.SWP_NOZORDER|win.SWP_NOACTIVATE)
 			}
 
-			s.Settings.Save(s.ExeDir)
+			settingsPath, _ := settings.GetSettingsPath(); settings.Save(settingsPath, s.Settings)
 			win.EndDialog(hDlg, win.IDOK)
 			return 1
 

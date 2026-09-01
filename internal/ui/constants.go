@@ -76,4 +76,5 @@ const (
 	WM_AUDIO_TRACK_DONE = win.WM_APP + 3
 	TIMER_CLOCK         = 1
 	// TIMER_SOUND_PREVIEW = 2 (defined in audio package as 1001, we'll keep 1001)
+	ODT_COMBOBOX        = 3
 )

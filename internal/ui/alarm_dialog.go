@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"syscall"
 	"unsafe"
-	"path/filepath"
+	
 
 	"github.com/lxn/win"
 )
@@ -49,7 +49,7 @@ func fillOverrideCombo(hDlg win.HWND, id int32, values []int, current int, suffi
 }
 
 func readOverrideCombo(hDlg win.HWND, id int32, values []int) int {
-	sel := int(win.SendDlgItemMessage(hDlg, id, win.CB_GETCURSEL, 0, 0))
+	sel := int(SendDlgItemMessage(hDlg, id, win.CB_GETCURSEL, 0, 0))
 	if sel <= 0 || sel > len(values) {
 		return -1
 	}
@@ -58,7 +58,7 @@ func readOverrideCombo(hDlg win.HWND, id int32, values []int) int {
 
 func getDlgItemText(hDlg win.HWND, id int32) string {
 	var buf [256]uint16
-	win.GetDlgItemText(hDlg, id, &buf[0], 256)
+	GetDlgItemText(hDlg, id, &buf[0], 256)
 	return syscall.UTF16ToString(buf[:])
 }
 
@@ -74,19 +74,19 @@ func AlarmDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) uin
 		ThemeDialogInit(hDlg, s)
 
 		if data.Label != "" {
-			win.SetDlgItemText(hDlg, IDC_ALARM_LABEL, data.Label)
+			SetDlgItemText(hDlg, IDC_ALARM_LABEL, data.Label)
 		}
 
 		if data.Hour >= 0 {
-			win.SetDlgItemText(hDlg, IDC_ALARM_HOUR, strconv.Itoa(data.Hour))
+			SetDlgItemText(hDlg, IDC_ALARM_HOUR, strconv.Itoa(data.Hour))
 		} else {
-			win.SetDlgItemText(hDlg, IDC_ALARM_HOUR, "")
+			SetDlgItemText(hDlg, IDC_ALARM_HOUR, "")
 		}
 
 		if data.Minute >= 0 {
-			win.SetDlgItemText(hDlg, IDC_ALARM_MINUTE, strconv.Itoa(data.Minute))
+			SetDlgItemText(hDlg, IDC_ALARM_MINUTE, strconv.Itoa(data.Minute))
 		} else {
-			win.SetDlgItemText(hDlg, IDC_ALARM_MINUTE, "")
+			SetDlgItemText(hDlg, IDC_ALARM_MINUTE, "")
 		}
 
 		for i := 0; i < 7; i++ {
@@ -100,7 +100,7 @@ func AlarmDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) uin
 		checkDlgButton(hDlg, IDC_ALARM_ENABLED, data.Enabled)
 		checkDlgButton(hDlg, IDC_ALARM_SKIP, data.SkipNext)
 
-		win.SetDlgItemText(hDlg, IDC_ALARM_SOUND, data.Sound)
+		SetDlgItemText(hDlg, IDC_ALARM_SOUND, data.Sound)
 
 		fillOverrideCombo(hDlg, IDC_ALARM_VOL, volValues, data.Volume, "%")
 		fillOverrideCombo(hDlg, IDC_ALARM_SNOOZE, snoozeValues, data.SnoozeMinutes, " min")
@@ -109,7 +109,7 @@ func AlarmDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) uin
 
 	case win.WM_MEASUREITEM:
 		mis := (*win.MEASUREITEMSTRUCT)(unsafe.Pointer(lParam))
-		if mis.CtlType == win.ODT_COMBOBOX {
+		if mis.CtlType == ODT_COMBOBOX {
 			mis.ItemHeight = 20
 			return 1
 		}
@@ -143,14 +143,14 @@ func AlarmDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) uin
 			if win.HIWORD(uint32(wParam)) == win.EN_KILLFOCUS {
 				txt := getDlgItemText(hDlg, IDC_ALARM_HOUR)
 				if v, err := strconv.Atoi(txt); err == nil && v > 23 {
-					win.SetDlgItemText(hDlg, IDC_ALARM_HOUR, "23")
+					SetDlgItemText(hDlg, IDC_ALARM_HOUR, "23")
 				}
 			}
 		case IDC_ALARM_MINUTE:
 			if win.HIWORD(uint32(wParam)) == win.EN_KILLFOCUS {
 				txt := getDlgItemText(hDlg, IDC_ALARM_MINUTE)
 				if v, err := strconv.Atoi(txt); err == nil && v > 59 {
-					win.SetDlgItemText(hDlg, IDC_ALARM_MINUTE, "59")
+					SetDlgItemText(hDlg, IDC_ALARM_MINUTE, "59")
 				}
 			}
 		case IDC_DAY_ALL:
@@ -171,13 +171,13 @@ func AlarmDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) uin
 				// Wait! Go-ole or win32 has it?
 				// To keep it simple, let's skip the file picker in this step since it requires OPENFILENAME struct
 				// which is not fully mapped in lxn/win.
-				win.MessageBox(hDlg, syscall.SyscallN_String("Sound picker is not yet implemented in Go port."), syscall.SyscallN_String("Not Implemented"), win.MB_OK)
+				win.MessageBox(hDlg, SyscallN_String("Sound picker is not yet implemented in Go port."), SyscallN_String("Not Implemented"), win.MB_OK)
 			}
 			return 1
 		case IDC_ALARM_SOUND_CLEAR:
 			if data != nil {
 				data.Sound = ""
-				win.SetDlgItemText(hDlg, IDC_ALARM_SOUND, "")
+				SetDlgItemText(hDlg, IDC_ALARM_SOUND, "")
 			}
 			return 1
 		case win.IDOK:
@@ -189,8 +189,8 @@ func AlarmDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) uin
 			mStr := getDlgItemText(hDlg, IDC_ALARM_MINUTE)
 
 			if hStr == "" || mStr == "" {
-				win.MessageBox(hDlg, syscall.SyscallN_String("Enter both an hour (0-23) and a minute (0-59)."),
-					syscall.SyscallN_String("Invalid Time"), win.MB_OK|win.MB_ICONWARNING)
+				win.MessageBox(hDlg, SyscallN_String("Enter both an hour (0-23) and a minute (0-59)."),
+					SyscallN_String("Invalid Time"), win.MB_OK|win.MB_ICONWARNING)
 				return 1
 			}
 
@@ -198,8 +198,8 @@ func AlarmDlgProc(hDlg win.HWND, msg uint32, wParam uintptr, lParam uintptr) uin
 			m, _ := strconv.Atoi(mStr)
 
 			if h < 0 || h > 23 || m < 0 || m > 59 {
-				win.MessageBox(hDlg, syscall.SyscallN_String("Please enter valid hour (0-23) and minute (0-59)."),
-					syscall.SyscallN_String("Invalid Time"), win.MB_OK|win.MB_ICONWARNING)
+				win.MessageBox(hDlg, SyscallN_String("Please enter valid hour (0-23) and minute (0-59)."),
+					SyscallN_String("Invalid Time"), win.MB_OK|win.MB_ICONWARNING)
 				return 1
 			}
 

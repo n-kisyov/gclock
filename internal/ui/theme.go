@@ -16,15 +16,10 @@ const (
 
 var (
 	moduxtheme = windows.NewLazySystemDLL("uxtheme.dll")
-	modgdi32   = windows.NewLazySystemDLL("gdi32.dll")
 	procSetWindowTheme = moduxtheme.NewProc("SetWindowTheme")
-	procCreateSolidBrush = modgdi32.NewProc("CreateSolidBrush")
 )
 
-func CreateSolidBrush(color win.COLORREF) win.HBRUSH {
-	ret, _, _ := procCreateSolidBrush.Call(uintptr(color))
-	return win.HBRUSH(ret)
-}
+// removed CreateSolidBrush
 
 func SetWindowTheme(hwnd win.HWND, appName string, idList string) {
 	var pAppName *uint16
@@ -134,12 +129,12 @@ func ThemeDialogColors(hDlg win.HWND, s *AppState, ctrl win.HWND, hdc win.HDC) w
 }
 
 func ThemeDrawComboItem(s *AppState, dis *win.DRAWITEMSTRUCT) bool {
-	if s == nil || dis.CtlType != win.ODT_COMBOBOX {
+	if s == nil || dis.CtlType != ODT_COMBOBOX {
 		return false
 	}
 
 	var buf [64]uint16
-	if dis.ItemID == ^uint32(0) || win.SendMessage(dis.HwndItem, win.CB_GETLBTEXT, uintptr(dis.ItemID), uintptr(unsafe.Pointer(&buf[0]))) == win.CB_ERR {
+	if dis.ItemID == -1 || win.SendMessage(dis.HwndItem, win.CB_GETLBTEXT, uintptr(dis.ItemID), uintptr(unsafe.Pointer(&buf[0]))) == win.CB_ERR {
 		buf[0] = 0
 	}
 
@@ -158,7 +153,7 @@ func ThemeDrawComboItem(s *AppState, dis *win.DRAWITEMSTRUCT) bool {
 	}
 
 	hBr := CreateSolidBrush(bg)
-	win.FillRect(dis.HDC, &dis.RcItem, hBr)
+	FillRect(dis.HDC, &dis.RcItem, hBr)
 	win.DeleteObject(win.HGDIOBJ(hBr))
 	win.SetBkMode(dis.HDC, win.TRANSPARENT)
 	win.SetTextColor(dis.HDC, fg)
@@ -188,7 +183,7 @@ func ThemeDialogInit(hDlg win.HWND, s *AppState) {
 
 		if cls == "Button" {
 			style := win.GetWindowLong(ctrl, win.GWL_STYLE)
-			typ := style & win.BS_TYPEMASK
+			typ := style & 0x0F
 			if typ == win.BS_AUTOCHECKBOX || typ == win.BS_AUTORADIOBUTTON ||
 				typ == win.BS_GROUPBOX || typ == win.BS_3STATE || typ == win.BS_AUTO3STATE {
 				SetWindowTheme(ctrl, "", "")

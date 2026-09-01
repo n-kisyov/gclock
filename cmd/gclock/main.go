@@ -125,6 +125,8 @@ func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
 			ui.ClockDrawDigital(hdc, &rc, &st, gState.Settings, &gState.Fonts, gState.AlarmActive, gState.Colors.ClockColor, gState.Colors.TextColor)
 		}
 
+		ui.DrawPanel(hdc, hwnd, gState)
+
 		win.EndPaint(hwnd, &ps)
 		return 0
 
@@ -132,6 +134,71 @@ func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
 		win.ShowWindow(hwnd, win.SW_HIDE)
 		return 0
 		
+	case win.WM_MOUSEMOVE:
+		mx := int32(win.LOWORD(uint32(lParam)))
+		my := int32(win.HIWORD(uint32(lParam)))
+		ht := ui.HitTest(gState, hwnd, mx, my)
+
+		if ht.Kind != gState.HoverTarget.Kind || ht.Index != gState.HoverTarget.Index {
+			gState.HoverTarget = ht
+			win.InvalidateRect(hwnd, nil, false)
+		}
+		if gState.PressedTarget.Kind != ui.HT_NONE {
+			wasIn := gState.PressedIn
+			gState.PressedIn = (ht.Kind == gState.PressedTarget.Kind && ht.Index == gState.PressedTarget.Index)
+			if wasIn != gState.PressedIn {
+				win.InvalidateRect(hwnd, nil, false)
+			}
+		}
+
+		if !gState.Tracking {
+			tme := win.TRACKMOUSEEVENT{
+				CbSize:      uint32(unsafe.Sizeof(win.TRACKMOUSEEVENT{})),
+				DwFlags:     win.TME_LEAVE,
+				HwndTrack:   hwnd,
+				DwHoverTime: 0,
+			}
+			win.TrackMouseEvent(&tme)
+			gState.Tracking = true
+		}
+		return 0
+
+	case win.WM_MOUSELEAVE:
+		gState.Tracking = false
+		gState.HoverTarget = ui.HitTarget{Kind: ui.HT_NONE}
+		if gState.PressedTarget.Kind != ui.HT_NONE {
+			gState.PressedIn = false
+		}
+		win.InvalidateRect(hwnd, nil, false)
+		return 0
+
+	case win.WM_LBUTTONDOWN:
+		mx := int32(win.LOWORD(uint32(lParam)))
+		my := int32(win.HIWORD(uint32(lParam)))
+		ht := ui.HitTest(gState, hwnd, mx, my)
+		if ht.Kind != ui.HT_NONE {
+			gState.PressedTarget = ht
+			gState.PressedIn = true
+			win.SetCapture(hwnd)
+			win.InvalidateRect(hwnd, nil, false)
+		}
+		return 0
+
+	case win.WM_LBUTTONUP:
+		if gState.PressedTarget.Kind != ui.HT_NONE {
+			win.ReleaseCapture()
+			ht := gState.PressedTarget
+			in := gState.PressedIn
+			gState.PressedTarget = ui.HitTarget{Kind: ui.HT_NONE}
+			gState.PressedIn = false
+			win.InvalidateRect(hwnd, nil, false)
+
+			if in {
+				handleHitAction(hwnd, ht)
+			}
+		}
+		return 0
+
 	case win.WM_DESTROY:
 		ui.TrayRemove(&gState.Nid)
 		if audioManager != nil {
@@ -142,6 +209,95 @@ func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
 		return 0
 	}
 	return win.DefWindowProc(hwnd, msg, wParam, lParam)
+}
+
+func handleHitAction(hwnd win.HWND, ht ui.HitTarget) {
+	switch ht.Kind {
+	case ui.HT_COLLAPSE:
+		gState.AlarmsCollapsed = !gState.AlarmsCollapsed
+		win.InvalidateRect(hwnd, nil, true)
+	case ui.HT_ALARM_CHECK:
+		gState.Settings.Alarms[ht.Index].Enabled = !gState.Settings.Alarms[ht.Index].Enabled
+		gState.Settings.Save(gState.ExeDir)
+		win.InvalidateRect(hwnd, nil, false)
+	case ui.HT_ALARM_CLEAR:
+		gState.Settings.Alarms[ht.Index].Hour = -1
+		gState.Settings.Save(gState.ExeDir)
+		win.InvalidateRect(hwnd, nil, true)
+	case ui.HT_ALARM_EDIT:
+		data := ui.AlarmEditData{
+			Hour:         gState.Settings.Alarms[ht.Index].Hour,
+			Minute:       gState.Settings.Alarms[ht.Index].Minute,
+			Enabled:      gState.Settings.Alarms[ht.Index].Enabled,
+			SkipNext:     gState.Settings.Alarms[ht.Index].SkipNext,
+			RepeatDays:   gState.Settings.Alarms[ht.Index].RepeatDays,
+			Volume:       gState.Settings.Alarms[ht.Index].Volume,
+			SnoozeMinutes: gState.Settings.Alarms[ht.Index].SnoozeMinutes,
+			Label:        gState.Settings.Alarms[ht.Index].Label,
+			Sound:        gState.Settings.Alarms[ht.Index].Sound,
+			State:        gState,
+		}
+		res := win.DialogBoxParam(win.GetModuleHandle(nil), win.MAKEINTRESOURCE(ui.IDD_ALARM), hwnd, syscall.NewCallback(ui.AlarmDlgProc), uintptr(unsafe.Pointer(&data)))
+		if res == win.IDOK {
+			gState.Settings.Alarms[ht.Index].Hour = data.Hour
+			gState.Settings.Alarms[ht.Index].Minute = data.Minute
+			gState.Settings.Alarms[ht.Index].Enabled = data.Enabled
+			gState.Settings.Alarms[ht.Index].SkipNext = data.SkipNext
+			gState.Settings.Alarms[ht.Index].RepeatDays = data.RepeatDays
+			gState.Settings.Alarms[ht.Index].Volume = data.Volume
+			gState.Settings.Alarms[ht.Index].SnoozeMinutes = data.SnoozeMinutes
+			gState.Settings.Alarms[ht.Index].Label = data.Label
+			gState.Settings.Alarms[ht.Index].Sound = data.Sound
+			gState.Settings.Save(gState.ExeDir)
+			win.InvalidateRect(hwnd, nil, true)
+		}
+	case ui.HT_SETTINGS:
+		win.DialogBoxParam(win.GetModuleHandle(nil), win.MAKEINTRESOURCE(ui.IDD_SETTINGS), hwnd, syscall.NewCallback(ui.SettingsDlgProc), uintptr(unsafe.Pointer(gState)))
+		win.InvalidateRect(hwnd, nil, true)
+	case ui.HT_MODE:
+		// Mode actions
+		switch ht.Index {
+		case ui.MB_TO_CLOCK:
+			gState.Settings.AppMode = 0
+		case ui.MB_TO_TIMER:
+			gState.Settings.AppMode = 1
+		case ui.MB_TO_STOPWATCH:
+			gState.Settings.AppMode = 2
+		case ui.MB_SNOOZE:
+			// snooze functionality (stub for now, audio manager handles this in future)
+		case ui.MB_DISMISS:
+			gState.AlarmActive = false
+			gState.SnoozePending = false
+			audioManager.StopAlarm()
+		case ui.MB_CD_START:
+			gState.CdRunning = true
+		case ui.MB_CD_PAUSE:
+			gState.CdRunning = false
+		case ui.MB_CD_RESET:
+			gState.CdRunning = false
+			gState.CdRemainingMs = int64(gState.Settings.CDHours*3600+gState.Settings.CDMins*60+gState.Settings.CDSecs) * 1000
+		case ui.MB_SW_START:
+			gState.SwRunning = true
+			gState.SwStartTick = uint32(time.Now().UnixMilli())
+		case ui.MB_SW_STOP:
+			gState.SwAccumulatedMs += uint32(time.Now().UnixMilli()) - gState.SwStartTick
+			gState.SwRunning = false
+		case ui.MB_SW_RESET:
+			gState.SwRunning = false
+			gState.SwAccumulatedMs = 0
+		case ui.MB_SLEEP:
+			if gState.SleepRunning {
+				audioManager.StopSleepTimer()
+				gState.SleepRunning = false
+			} else {
+				if audioManager.StartSleepTimer() {
+					gState.SleepRunning = true
+					gState.SleepEnd = audioManager.SleepEnd
+				}
+			}
+		}
+		win.InvalidateRect(hwnd, nil, true)
+	}
 }
 
 func main() {
@@ -171,6 +327,8 @@ func main() {
 	gState.Fonts.HClockFont = win.CreateFontIndirect(&lf)
 	lf.LfHeight = -20
 	gState.Fonts.HDateFont = win.CreateFontIndirect(&lf)
+	lf.LfHeight = -14
+	gState.Fonts.HGuiFont = win.CreateFontIndirect(&lf)
 
 	className, _ := syscall.UTF16PtrFromString("GClockMainWnd")
 	appName, _ := syscall.UTF16PtrFromString("GClock")
