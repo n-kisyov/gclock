@@ -1,2 +1,4 @@
 /legacy-alarmclock
 gclock.exe
+cmd/gclock/app.syso
+gclock_settings.json
